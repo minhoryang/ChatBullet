@@ -8,13 +8,15 @@ from flask import (
 
 from .db import (
     User,
+    Msg,
     db,
 )
 
 
 def add_views(app):
     app.route('/', methods=["GET", "POST"])(login)
-    app.route('/chat')(chat)
+    app.route('/chat/')(chat)
+    app.route('/chat/<uuid:id>')(message)
 
 
 def login():
@@ -39,5 +41,24 @@ def login():
 
 
 def chat():
-    # TODO: Issue #2: permalink
     return render_template("chat.html")
+
+
+def message(id):
+    """Issue #2: permalink for message."""
+
+    found = Msg.query.get(id)
+    if not found:
+        return 'message not found', 404
+
+    user_id = session.get('user')
+    if not user_id:
+        return redirect(url_for('login'))
+
+    # TODO: Issue #11: ACL
+    user = User.query.get(user_id)
+    if user not in found.room.users:
+        return redirect(url_for('login'))
+
+    # TODO: Don't show the changed url to user.
+    return render_template("chat.html", message_id=str(id))

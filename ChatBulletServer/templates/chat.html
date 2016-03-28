@@ -29,6 +29,18 @@
 
             socket.on('connect', function(){
                 $('#log').append('connected!<br>');
+                {% if message_id %}
+                    socket.emit(
+                            'lookback_messages',
+                            {
+                                from_msg_id: '{{ message_id }}'
+                            }
+                    );
+                {% endif %}
+            });
+
+            socket.on('disconnect', function(){
+                history.back();
             });
 
             socket.on('system', function(message){

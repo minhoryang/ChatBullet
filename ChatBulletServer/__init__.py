@@ -1,4 +1,5 @@
 from flask import Flask
+from flask.ext.uuid import FlaskUUID
 from werkzeug.contrib.fixers import ProxyFix
 
 from .chat import (
@@ -21,6 +22,8 @@ def create_app_and_socket(object_name):
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True)
     socketio.init_app(app)
+    FlaskUUID(app)
+
     add_views(app)
 
     return app, socketio

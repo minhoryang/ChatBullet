@@ -2,7 +2,7 @@
 
 Revision ID: 86516a2367af
 Revises: None
-Create Date: 2016-03-28 14:45:09.053349
+Create Date: 2016-03-28 20:36:33.093092
 
 """
 
@@ -31,8 +31,8 @@ def upgrade():
     )
     op.create_table('msg',
     sa.Column('id', ChatBulletServer._types.UUIDType(length=16), nullable=False),
-    sa.Column('user_id', ChatBulletServer._types.UUIDType(length=16), nullable=False),
-    sa.Column('room_id', ChatBulletServer._types.UUIDType(length=16), nullable=False),
+    sa.Column('user_id', ChatBulletServer._types.UUIDType(length=16), nullable=True),
+    sa.Column('room_id', ChatBulletServer._types.UUIDType(length=16), nullable=True),
     sa.Column('contents', sa.String(), nullable=False),
     sa.Column('sent', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['room_id'], ['room.id'], ),
@@ -42,8 +42,8 @@ def upgrade():
     op.create_table('users_in_room',
     sa.Column('user_id', ChatBulletServer._types.UUIDType(length=16), nullable=True),
     sa.Column('room_id', ChatBulletServer._types.UUIDType(length=16), nullable=True),
-    sa.ForeignKeyConstraint(['room_id'], ['room.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
+    sa.ForeignKeyConstraint(['room_id'], ['room.id'], ondelete='cascade'),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='cascade')
     )
     ### end Alembic commands ###
 

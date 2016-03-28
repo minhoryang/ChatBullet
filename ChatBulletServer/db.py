@@ -33,6 +33,7 @@ class User(db.Model):
             'Room',
             secondary=users_in_room,
             backref=db.backref('users', lazy='dynamic'),
+            cascade='all, delete',
     )
 
     def __str__(self):
@@ -48,6 +49,7 @@ class Room(db.Model):
             'Msg',
             backref=db.backref('room'),
             lazy='dynamic',
+            cascade='all, delete',
     )
     # TODO: Issue #11: ACL
 
@@ -60,8 +62,8 @@ class Msg(db.Model):
 
     # TODO: Issue #2: permalink
     id = db.Column(UUIDType(), primary_key=True, default=uuid4)
-    user_id = db.Column(db.ForeignKey('user.id'), nullable=False)
-    room_id = db.Column(db.ForeignKey('room.id'), nullable=False)
+    user_id = db.Column(db.ForeignKey('user.id'))
+    room_id = db.Column(db.ForeignKey('room.id'))
     contents = db.Column(db.String(), nullable=False)
     sent = db.Column(db.DateTime, default=datetime.now)
     # TODO: Issue #4: Modifiable, Deletable
