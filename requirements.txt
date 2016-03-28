@@ -1,9 +1,11 @@
 flask
 flask-admin
-flask-bcrypt
 flask-script
 flask-socketio
 flask-sqlalchemy
 flask-migrate
 flask-uuid
 sqlalchemy-utils
+gunicorn
+eventlet
+
