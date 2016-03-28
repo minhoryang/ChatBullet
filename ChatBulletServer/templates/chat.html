@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+    <script type="text/javascript" src="//cdn.socket.io/socket.io-1.4.5.js"></script>
+</head>
+<body>
+    <div>
+        <form id="send">
+            <input type="text" id="room" placeholder="#room" />
+            <input type="text" id="msg" placeholder="message" />
+            <input type="submit" value="Send" />
+        </form>
+        <form id="join">
+            <input type="text" id="room" placeholder="#room" />
+            <input type="submit" value="Join" />
+        </form>
+        <form id="leave">
+            <input type="text" id="room" placeholder="#room" />
+            <input type="submit" value="Leave" />
+        </form>
+    </div>
+    <div id="log"></div>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+            var socket = io.connect('/ws');
+
+            socket.on('connect', function(){
+                $('#log').append('connected!<br>');
+            });
+
+            socket.on('system', function(message){
+                $('#log').append(message.message + '<br>');
+            });
+
+            socket.on('talked', function(message){
+                $('#log').append(message.data + '<br>');
+                console.log(message);
+            });
+
+            $('#send').submit(function (){
+                socket.emit(
+                        'send_message',
+                        {
+                            data: $('#send #msg').val(),
+                            room: $('#send #room').val()
+                        }
+                );
+                return false;
+            });
+
+            $('#join').submit(function (){
+                socket.emit(
+                        'join_req',
+                        {
+                            room: $('#join #room').val()
+                        }
+                );
+                return false;
+            });
+
+            $('#leave').submit(function (){
+                socket.emit(
+                        'leave_req',
+                        {
+                            room: $('#leave #room').val()
+                        }
+                );
+                return false;
+            });
+        });
+    </script>
+</body>
+</html>

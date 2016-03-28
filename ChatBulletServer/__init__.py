@@ -9,6 +9,7 @@ from .db import (
     db,
     migrate,
 )
+from .view import add_views
 
 
 def create_app_and_socket(object_name):
@@ -20,5 +21,6 @@ def create_app_and_socket(object_name):
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True)
     socketio.init_app(app)
+    add_views(app)
 
     return app, socketio

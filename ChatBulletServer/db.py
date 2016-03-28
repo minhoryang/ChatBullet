@@ -61,7 +61,6 @@ class Msg(db.Model):
     # TODO: Issue #2: permalink
     id = db.Column(UUIDType(), primary_key=True, default=uuid4)
     user_id = db.Column(db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship("User", backref="parents")
     room_id = db.Column(db.ForeignKey('room.id'), nullable=False)
     contents = db.Column(db.String(), nullable=False)
     sent = db.Column(db.DateTime, default=datetime.now)
