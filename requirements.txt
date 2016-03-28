@@ -1,0 +1,8 @@
+flask
+flask-admin
+flask-bcrypt
+flask-script
+flask-socketio
+flask-sqlalchemy
+flask-migrate
+sqlalchemy-utils
