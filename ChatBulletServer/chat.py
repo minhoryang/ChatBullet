@@ -176,7 +176,7 @@ def on_lookback_messages(message):
         Msg.sent.asc(),
     ):
         emit(
-                'talked',
+                'received_msg',
                 {
                     'id': str(m.id),
                     'room_id': str(from_msg.room.id),
