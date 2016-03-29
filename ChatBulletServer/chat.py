@@ -67,6 +67,7 @@ def on_send_message(message):
     db.session.commit()
 
     message['id'] = str(new_msg.id)
+    message['user'] = current_user.email
 
     emit('talked', message, room=current_room.name)
 
@@ -173,6 +174,7 @@ def on_lookback_messages(message):
                     'id': str(m.id),
                     'room': from_msg.room.name,
                     'data': m.contents,
+                    'user': m.user.email,
                 },
         )
 

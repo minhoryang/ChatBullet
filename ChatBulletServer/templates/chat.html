@@ -56,6 +56,7 @@
     </script>
     <script type="text/html" id="talked_tmpl">
         <div>
+            <user />
             <a class="message">
                 <message />
             </a>
@@ -74,28 +75,34 @@
 
         function talked_tmpl(message){
             tmpl = $($("#talked_tmpl").html());
+            $("user", tmpl).replaceWith(message.user);
             $("message", tmpl).replaceWith(message.data);
             $("a", tmpl).attr('href', message.id);
             $(tmpl).attr('id', message.id);
-            $("button.mod", tmpl).on('click', function(){
-                socket.emit(
-                        'modify_msg_req',
-                        {
-                            id: message.id,
-                            data: prompt(message.data, message.data)
-                        }
-                )
-            });
-            $("button.del", tmpl).on('click', function(){
-                socket.emit(
-                        'delete_msg_req',
-                        {
-                            id: message.id
-                        }
-                )
-            });
+            if (myself === message.user){
+                $("button.mod", tmpl).on('click', function(){
+                    socket.emit(
+                            'modify_msg_req',
+                            {
+                                id: message.id,
+                                data: prompt(message.data, message.data)
+                            }
+                    )
+                });
+                $("button.del", tmpl).on('click', function(){
+                    socket.emit(
+                            'delete_msg_req',
+                            {
+                                id: message.id
+                            }
+                    )
+                });
+            }else{
+                $("button", tmpl).remove();
+            }
             $('#log').append(tmpl);
         }
+        var myself = "{{ user }}";
         var socket;
         $(document).ready(function(){
             socket = io.connect('/ws');
