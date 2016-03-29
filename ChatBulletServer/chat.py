@@ -119,15 +119,13 @@ def _join_room_and_notify(user, room):
 def on_leave_request(message):
     """When User asked to leave the room."""
 
-    # Get room name
-    room_name = message.get('room')
-    if not room_name:
+    # Get room id
+    room_id = message.get('room_id')
+    if not room_id:
         return  # TODO: Notify error to user.
 
     # Check the room.
-    room = Room.query.filter(
-        Room.name == room_name,  # TODO
-    ).first()
+    room = Room.query.get(room_id)
     if not room:
         return  # TODO: Notify error to user.
 
