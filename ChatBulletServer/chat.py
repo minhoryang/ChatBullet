@@ -24,7 +24,7 @@ namespace = '/ws'
 
 
 def _get_current_room(message):
-    current_room_id = message.get('room')
+    current_room_id = message.get('room_id')
     if not current_room_id:
         return
     found = Room.query.get(current_room_id)
@@ -101,7 +101,7 @@ def _join_room_and_notify(user, room):
     """Join room and notify the user in that room."""
     emit('system', {
         'type': 'join',
-        'room': str(room),
+        'room_name': str(room),
         'room_id': str(room.id),
         'message': 'Join {0}'.format(room),
     })
@@ -109,7 +109,6 @@ def _join_room_and_notify(user, room):
     emit('system', {
         'type': 'joined',
         'user': current_user.email,
-        'room': str(room),
         'room_id': str(room.id),
         'message': '{0} Join'.format(user)
     }, room=room.name)
@@ -147,7 +146,6 @@ def _leave_room_and_notify(user, room):
     """Leave room and notify the users in that room."""
     emit('system', {
         'type': 'leave',
-        'room': str(room),
         'room_id': str(room.id),
         'message': 'Leave {0}'.format(room),
     })
@@ -155,7 +153,6 @@ def _leave_room_and_notify(user, room):
     emit('system', {
         'type': 'leaved',
         'user': current_user.email,
-        'room': str(room),
         'room_id': str(room.id),
         'message': '{0} Leaves'.format(user)
     }, room=room.name)
@@ -184,7 +181,6 @@ def on_lookback_messages(message):
                 'talked',
                 {
                     'id': str(m.id),
-                    'room': from_msg.room.name,
                     'room_id': str(from_msg.room.id),
                     'data': m.contents,
                     'user': m.user.email,

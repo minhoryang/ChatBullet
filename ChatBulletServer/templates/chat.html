@@ -114,7 +114,7 @@
                 $("button", tmpl).remove();
             }
             // add message to chatroom
-            $('div#' + message.room).append(tmpl);
+            $('div#' + message.room_id).append(tmpl);
         }
 
         function new_system_msg_at_chatroom_tmpl(message){
@@ -126,7 +126,7 @@
         function new_chatroom_header_tmpl(message){
             tmpl = $($("#new_chatroom_header_tmpl").html());
             $(tmpl).addClass(message.room_id);
-            $("room_name", tmpl).replaceWith(message.room);
+            $("room_name", tmpl).replaceWith(message.room_name);
             $("a", tmpl).attr("href", "javascript:switch_chatroom('" + message.room_id + "')");
             $(".navbar-nav").append(tmpl);
         }
@@ -225,7 +225,7 @@
                         'send_message',
                         {
                             data: $('#send #msg').val(),
-                            room: room
+                            room_id: room
                         }
                 );
                 return false;
