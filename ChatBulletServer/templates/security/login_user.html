@@ -2,43 +2,17 @@
 {% block title %}Login{% endblock %}
 {% block body %}
 <div class="container-fluid">
+    {% from "security/_macros.html" import render_field_with_errors, render_field %}
+    {% include "security/_messages.html" %}
     <h1>Login</h1>
-    <form action="/login" method="POST" name="login_user_form">
-      <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="1459265895##51d086ae1895c97eda5e7f06b62e8a344051c28c"><input id="next" name="next" type="hidden" value="/"></div>
-
-      <p>
-        <label for="email">Email Address</label> <input id="email" name="email" type="text" value="">
-
-      </p>
-
-
-      <p>
-        <label for="password">Password</label> <input id="password" name="password" type="password" value="">
-
-      </p>
-
-
-      <p>
-        <label for="remember">Remember Me</label> <input id="remember" name="remember" type="checkbox" value="y">
-
-      </p>
-
-
-      <p><input id="next" name="next" type="hidden" value="/"></p>
-
-
-      <p><input id="submit" name="submit" type="submit" value="Login"></p>
-
+    <form action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
+      {{ login_user_form.hidden_tag() }}
+      {{ render_field_with_errors(login_user_form.email) }}
+      {{ render_field_with_errors(login_user_form.password) }}
+      {{ render_field_with_errors(login_user_form.remember) }}
+      {{ render_field(login_user_form.next) }}
+      {{ render_field(login_user_form.submit) }}
     </form>
-
-    <h2>Menu</h2>
-    <ul>
-      <li><a href="/login?next=/">Login</a></li>
-
-      <li><a href="/register?next=/">Register</a><br/></li>
-
-
-
-    </ul>
+    {% include "security/_menu.html" %}
 </div>
 {% endblock %}

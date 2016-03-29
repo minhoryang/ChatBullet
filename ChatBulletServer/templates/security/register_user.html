@@ -2,42 +2,17 @@
 {% block title %}Register{% endblock %}
 {% block body %}
 <div class="container-fluid">
+    {% from "security/_macros.html" import render_field_with_errors, render_field %}
+    {% include "security/_messages.html" %}
     <h1>Register</h1>
-    <form action="/register" method="POST" name="register_user_form">
-      <div style="display:none;"><input id="csrf_token" name="csrf_token" type="hidden" value="1459265875##409065741472051a0160fc23f0388041162c4e9d"><input id="next" name="next" type="hidden" value="/"></div>
-
-      <p>
-        <label for="email">Email Address</label> <input id="email" name="email" type="text" value="">
-
-      </p>
-
-
-      <p>
-        <label for="password">Password</label> <input id="password" name="password" type="password" value="">
-
-      </p>
-
-
-
-      <p>
-        <label for="password_confirm">Retype Password</label> <input id="password_confirm" name="password_confirm" type="password" value="">
-
-      </p>
-
-
-
-      <p><input id="submit" name="submit" type="submit" value="Register"></p>
-
+    <form action="{{ url_for_security('register') }}" method="POST" name="register_user_form">
+      {{ register_user_form.hidden_tag() }}
+      {{ render_field_with_errors(register_user_form.email) }}
+      {{ render_field_with_errors(register_user_form.password) }}
+      {% if register_user_form.password_confirm %}
+        {{ render_field_with_errors(register_user_form.password_confirm) }}
+      {% endif %}
+      {{ render_field(register_user_form.submit) }}
     </form>
-
-    <h2>Menu</h2>
-    <ul>
-      <li><a href="/login?next=/">Login</a></li>
-
-      <li><a href="/register?next=/">Register</a><br/></li>
-
-
-
-    </ul>
-</div>
+    {% include "security/_menu.html" %}</div>
 {% endblock %}}
