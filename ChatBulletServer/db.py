@@ -91,7 +91,7 @@ class Room(db.Model):
 class Msg(db.Model):
     __tablename__ = "msg"
 
-    # TODO: Issue #2: permalink
+    # XXX: Issue #2: permalink
     id = db.Column(UUIDType(), primary_key=True, default=uuid4)
     user_id = db.Column(db.ForeignKey('user.id'))
     room_id = db.Column(db.ForeignKey('room.id'))
