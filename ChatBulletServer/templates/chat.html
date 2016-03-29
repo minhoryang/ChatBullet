@@ -14,21 +14,18 @@
         <!-- TODO responsive?! -->
         <h1 class="navbar-brand">Chatbullet</h1>
         <ul class="nav navbar-nav">
-            <li class="nav-item active">
-                <a class="nav-link" href="#">#Room1</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">#Room2</a>
+            <li class="nav-item active system">
+                <a class="nav-link" href="javascript:switch_chatroom('system')">System</a>
             </li>
         </ul>
     </header>
-    <div class="container-fluid">
-        <div id="log"></div> <!-- TODO scroll howto? -->
+    <div class="container-fluid chatrooms">
+        <div id="system"></div>
+        <!-- TODO scroll howto? -->
     </div>
     <footer class="footer">
         <div class="container">
             <form id="send">
-                <input type="text" id="room" placeholder="#room" />
                 <input type="text" id="msg" placeholder="message" />
                 <input type="submit" value="Send" />
             </form>
@@ -54,7 +51,7 @@
             <br>
         </div>
     </script>
-    <script type="text/html" id="talked_tmpl">
+    <script type="text/html" id="new_received_msg_tmpl">
         <div>
             <user />
             <a class="message">
@@ -65,20 +62,32 @@
             <br>
         </div>
     </script>
+    <script type="text/html" id="new_chatroom_header_tmpl">
+        <li class="nav-item">
+            <a class="nav-link" href="#"><room_name /></a>
+        </li>
+    </script>
+    <script type="text/html" id="new_chatroom_tmpl">
+        <div style="display: none;">
+        </div>
+    </script>
 
     <script type="text/javascript" charset="utf-8">
         function system_tmpl(message){
             tmpl = $($("#system_tmpl").html());
-            $("message", tmpl).replaceWith(message);
-            return tmpl
+            $("message", tmpl).replaceWith(message.message);
+            $('div#system').append(tmpl);
         }
 
-        function talked_tmpl(message){
-            tmpl = $($("#talked_tmpl").html());
+        function new_received_msg_tmpl(message){
+            tmpl = $($("#new_received_msg_tmpl").html());
+            // fill the status
             $("user", tmpl).replaceWith(message.user);
             $("message", tmpl).replaceWith(message.data);
-            $("a", tmpl).attr('href', message.id);
             $(tmpl).attr('id', message.id);
+            // add link
+            $("a", tmpl).attr('href', message.id);
+            // if this msg is from myself, enable button.
             if (myself === message.user){
                 $("button.mod", tmpl).on('click', function(){
                     socket.emit(
@@ -100,15 +109,46 @@
             }else{
                 $("button", tmpl).remove();
             }
-            $('#log').append(tmpl);
+            // add message to chatroom
+            $('div#' + message.room).append(tmpl);
         }
+
+        function new_chatroom_header_tmpl(message){
+            tmpl = $($("#new_chatroom_header_tmpl").html());
+            $(tmpl).addClass(message.room_id);
+            $("room_name", tmpl).replaceWith(message.room);
+            $("a", tmpl).attr("href", "javascript:switch_chatroom('" + message.room_id + "')");
+            $(".navbar-nav").append(tmpl);
+        }
+
+        function new_chatroom_tmpl(message){
+            tmpl = $($("#new_chatroom_tmpl").html());
+            $(tmpl).attr('id', message.room_id);
+            $(".chatrooms").append(tmpl);
+        }
+
+        var room = "system";
+        function switch_chatroom(next_room){
+            // hide and seek the rooms
+            $("div#" + room).hide();
+            $("div#" + next_room).show();
+
+            // highlight header
+            $("li." + room).removeClass('active');
+            $("li." + next_room).addClass('active');
+
+            room = next_room;
+
+            return false;
+        }
+
         var myself = "{{ user }}";
         var socket;
         $(document).ready(function(){
             socket = io.connect('/ws');
 
             socket.on('connect', function(){
-                $('#log').append('connected!<br>');
+                $('div#system').append('connected!<br>');
                 {% if message_id %}
                     socket.emit(
                             'lookback_messages',
@@ -124,11 +164,36 @@
             });
 
             socket.on('system', function(message){
-                $('#log').append(system_tmpl(message.message));
+                system_tmpl(message);
+                if (message.type === "join"){
+                    // Add Header
+                    new_chatroom_header_tmpl(message);
+
+                    // Add Chatroom
+                    new_chatroom_tmpl(message);
+
+                    // Switch Chatroom
+                    switch_chatroom(message.room_id);
+                }else if (message.type === "leave"){
+                    // Remove Header
+                    $("li." + message.room_id).remove();
+
+                    // Switch Chatroom
+                    if (room === message.room_id){
+                        switch_chatroom("system");
+                    }
+
+                    // Remove Chatroom
+                    $("div#" + message.room_id).remove();
+                }else if (message.type === "joined"){
+                    // TODO : notify this to user
+                }else if (message.type === "leaved"){
+                    // TODO : notify this to user
+                }
             });
 
-            socket.on('talked', function(message){
-                talked_tmpl(message);
+            socket.on('received_msg', function(message){
+                new_received_msg_tmpl(message);
                 console.log(message);
             });
 
@@ -145,7 +210,7 @@
                         'send_message',
                         {
                             data: $('#send #msg').val(),
-                            room: $('#send #room').val()
+                            room: room
                         }
                 );
                 return false;
