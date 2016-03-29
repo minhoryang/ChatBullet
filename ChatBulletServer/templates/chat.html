@@ -144,17 +144,17 @@
             $(".chatrooms").append(tmpl);
         }
 
-        var room = "system";
-        function switch_chatroom(next_room){
+        var current_room_id = "system";
+        function switch_chatroom(next_room_id){
             // hide and seek the rooms
-            $("div#" + room).hide();
-            $("div#" + next_room).show();
+            $("div#" + current_room_id).hide();
+            $("div#" + next_room_id).show();
 
             // highlight header
-            $("li." + room).removeClass('active');
-            $("li." + next_room).addClass('active');
+            $("li." + current_room_id).removeClass('active');
+            $("li." + next_room_id).addClass('active');
 
-            room = next_room;
+            current_room_id = next_room_id;
 
             return false;
         }
@@ -195,7 +195,7 @@
                     $("li." + message.room_id).remove();
 
                     // Switch Chatroom
-                    if (room === message.room_id){
+                    if (current_room_id === message.room_id){
                         switch_chatroom("system");
                     }
 
@@ -232,7 +232,7 @@
                         'send_message',
                         {
                             data: $('#send #msg').val(),
-                            room_id: room
+                            room_id: current_room_id
                         }
                 );
                 $('#send #msg').val('');
@@ -253,7 +253,7 @@
                 socket.emit(
                         'leave_req',
                         {
-                            room_id: room
+                            room_id: current_room_id
                         }
                 );
                 return false;
