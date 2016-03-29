@@ -69,7 +69,7 @@ class User(db.Model, UserMixin):
     )
 
     def __str__(self):
-        return "@{0}".format(self.email)
+        return "{0}".format(self.email)
 
 
 class Room(db.Model):
