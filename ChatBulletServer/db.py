@@ -11,6 +11,7 @@ from flask.ext.security import (
     UserMixin,
     RoleMixin,
 )
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from ._types import (
     UUIDType,
@@ -97,10 +98,13 @@ class Msg(db.Model):
     room_id = db.Column(db.ForeignKey('room.id'))
     contents = db.Column(db.String(), nullable=False)
     sent = db.Column(db.DateTime, default=datetime.now)
-    # TODO: Issue #4: Modifiable, Deletable
 
     def __str__(self):
         return "'{0}'".format(self.contents)
+
+    @hybrid_property
+    def user(self):
+        return User.query.get(self.user_id)
 
 
 # TODO: flask-admin: primary_key didn't show.

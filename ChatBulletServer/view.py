@@ -20,7 +20,7 @@ def add_views(app):
 
 @login_required
 def chat():
-    return render_template("chat.html")
+    return render_template("chat.html", user=current_user.email)
 
 
 @login_required
@@ -37,4 +37,4 @@ def message(id):
         return current_app.login_manager.unauthorized()
 
     # TODO: Don't show the changed url to user.
-    return render_template("chat.html", message_id=str(id))
+    return render_template("chat.html", message_id=str(id), user=current_user.email)
