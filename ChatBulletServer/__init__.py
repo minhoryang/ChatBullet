@@ -9,6 +9,8 @@ from .db import (
     admin,
     db,
     migrate,
+    user_datastore,
+    security,
 )
 from .view import add_views
 
@@ -23,6 +25,7 @@ def create_app_and_socket(object_name):
     migrate.init_app(app, db, render_as_batch=True)
     socketio.init_app(app)
     FlaskUUID(app)
+    security.init_app(app, user_datastore)
 
     add_views(app)
 

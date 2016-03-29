@@ -1,6 +1,8 @@
 flask
 flask-admin
+flask-bcrypt
 flask-script
+flask-security
 flask-socketio
 flask-sqlalchemy
 flask-migrate
