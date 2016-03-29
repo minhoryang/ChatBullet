@@ -21,7 +21,6 @@
     </header>
     <div class="container-fluid chatrooms">
         <div id="system"></div>
-        <!-- TODO scroll howto? -->
     </div>
     <footer class="footer">
         <div class="container">
@@ -194,6 +193,7 @@
 
             socket.on('received_msg', function(message){
                 new_received_msg_tmpl(message);
+                $('.chatrooms').scrollTop($('.chatrooms')[0].scrollHeight);
                 console.log(message);
             });
 
