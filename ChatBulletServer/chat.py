@@ -24,12 +24,10 @@ namespace = '/ws'
 
 
 def _get_current_room(message):
-    current_room_name = message.get('room')
-    if not current_room_name:
+    current_room_id = message.get('room')
+    if not current_room_id:
         return
-    found = Room.query.filter(
-        Room.name == current_room_name,
-    ).first()
+    found = Room.query.get(current_room_id)
     return found
 
 
@@ -69,7 +67,7 @@ def on_send_message(message):
     message['id'] = str(new_msg.id)
     message['user'] = current_user.email
 
-    emit('talked', message, room=current_room.name)
+    emit('received_msg', message, room=current_room.name)
 
 
 @socketio.on('join_req', namespace=namespace)
@@ -102,10 +100,17 @@ def on_join_request(message):
 def _join_room_and_notify(user, room):
     """Join room and notify the user in that room."""
     emit('system', {
+        'type': 'join',
+        'room': str(room),
+        'room_id': str(room.id),
         'message': 'Join {0}'.format(room),
     })
     join_room(room.name)
     emit('system', {
+        'type': 'joined',
+        'user': current_user.email,
+        'room': str(room),
+        'room_id': str(room.id),
         'message': '{0} Join'.format(user)
     }, room=room.name)
     # TODO: Send room name, Connected User List
@@ -141,10 +146,17 @@ def on_leave_request(message):
 def _leave_room_and_notify(user, room):
     """Leave room and notify the users in that room."""
     emit('system', {
+        'type': 'leave',
+        'room': str(room),
+        'room_id': str(room.id),
         'message': 'Leave {0}'.format(room),
     })
     leave_room(room.name)
     emit('system', {
+        'type': 'leaved',
+        'user': current_user.email,
+        'room': str(room),
+        'room_id': str(room.id),
         'message': '{0} Leaves'.format(user)
     }, room=room.name)
 
@@ -173,6 +185,7 @@ def on_lookback_messages(message):
                 {
                     'id': str(m.id),
                     'room': from_msg.room.name,
+                    'room_id': str(from_msg.room.id),
                     'data': m.contents,
                     'user': m.user.email,
                 },
