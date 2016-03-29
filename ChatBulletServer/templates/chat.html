@@ -2,28 +2,65 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
     <title>Chat</title>
-    <script type="text/javascript" src="//code.jquery.com/jquery-2.2.2.min.js"></script>
-    <script type="text/javascript" src="//cdn.socket.io/socket.io-1.4.5.js"></script>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/sticky-footer.css">
 </head>
 <body>
-    <div>
-        <form id="send">
-            <input type="text" id="room" placeholder="#room" />
-            <input type="text" id="msg" placeholder="message" />
-            <input type="submit" value="Send" />
-        </form>
-        <form id="join">
-            <input type="text" id="room" placeholder="#room" />
-            <input type="submit" value="Join" />
-        </form>
-        <form id="leave">
-            <input type="text" id="room" placeholder="#room" />
-            <input type="submit" value="Leave" />
-        </form>
+    <header class="navbar navbar-full navbar-dark navbar-fixed-top bg-primary">
+        <!-- TODO responsive?! -->
+        <h1 class="navbar-brand">Chatbullet</h1>
+        <ul class="nav navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">#Room1</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">#Room2</a>
+            </li>
+        </ul>
+    </header>
+    <div class="container-fluid">
+        <div id="log"></div> <!-- TODO scroll howto? -->
     </div>
-    <div id="log"></div>
+    <footer class="footer">
+        <div class="container">
+            <form id="send">
+                <input type="text" id="room" placeholder="#room" />
+                <input type="text" id="msg" placeholder="message" />
+                <input type="submit" value="Send" />
+            </form>
+            <form id="join">
+                <input type="text" id="room" placeholder="#room" />
+                <input type="submit" value="Join" />
+            </form>
+            <form id="leave">
+                <input type="text" id="room" placeholder="#room" />
+                <input type="submit" value="Leave" />
+            </form>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.2.2.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="//cdn.socket.io/socket.io-1.4.5.js"></script>
+
+    <!-- templates -->
+    <script type="text/html" id="talked_tmpl">
+        <div>
+            <message />
+            <br>
+        </div>
+    </script>
+
     <script type="text/javascript" charset="utf-8">
+        function talked_tmpl(message){
+            tmpl = $($("#talked_tmpl").html());
+            $("message", tmpl).replaceWith(message);
+            return tmpl
+        }
         $(document).ready(function(){
             var socket = io.connect('/ws');
 
@@ -44,11 +81,11 @@
             });
 
             socket.on('system', function(message){
-                $('#log').append(message.message + '<br>');
+                $('#log').append(talked_tmpl(message.message));
             });
 
             socket.on('talked', function(message){
-                $('#log').append(message.data + '<br>');
+                $('#log').append(talked_tmpl(message.data));
                 console.log(message);
             });
 
