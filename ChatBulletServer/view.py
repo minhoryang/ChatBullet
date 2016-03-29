@@ -31,9 +31,9 @@ def message(id):
     if not found:
         return 'message not found', 404
 
-    # TODO: Issue #11: ACL
-    if current_user not in found.room.users:
-        logout_user()
+    # XXX: Issue #11: ACL
+    if not current_user.has_role(found):
+        logout_user()  # TODO: notify it more gently.
         return current_app.login_manager.unauthorized()
 
     # TODO: Don't show the changed url to user.

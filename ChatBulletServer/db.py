@@ -11,6 +11,7 @@ from flask.ext.security import (
     UserMixin,
     RoleMixin,
 )
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from ._types import (
     UUIDType,
@@ -20,23 +21,6 @@ from ._types import (
 admin = Admin()
 db = SQLAlchemy()
 migrate = Migrate()
-
-
-# XXX: Issue #9: flask-social flask-security
-roles_users = db.Table(
-    'roles_users',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
-)
-
-
-class Role(db.Model, RoleMixin):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
-
-    def __str__(self):
-        return "<{0}>".format(self.name)
 
 
 users_in_room = db.Table(
@@ -54,12 +38,6 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
     active = db.Column(db.Boolean())
-    roles = db.relationship(
-        'Role',
-        secondary=roles_users,
-        backref=db.backref('users', lazy='dynamic')
-    )
-
     rooms = db.relationship(
             'Room',
             secondary=users_in_room,
@@ -67,22 +45,27 @@ class User(db.Model, UserMixin):
             cascade='all, delete',
     )
 
+    @hybrid_property
+    def roles(self):
+        return self.rooms
+
     def __str__(self):
         return "@{0}".format(self.email)
 
 
-class Room(db.Model):
+class Room(db.Model, RoleMixin):
     __tablename__ = "room"
 
     id = db.Column(UUIDType(), primary_key=True, default=uuid4)
     name = db.Column(db.String(50), unique=True)
+    description = db.Column(db.String(255))
     msgs = db.relationship(
             'Msg',
             backref=db.backref('room'),
             lazy='dynamic',
             cascade='all, delete',
     )
-    # TODO: Issue #11: ACL
+    # XXX: Issue #11: ACL
 
     def __str__(self):
         return "#{0}".format(self.name)
@@ -104,10 +87,9 @@ class Msg(db.Model):
 
 
 # TODO: flask-admin: primary_key didn't show.
-admin.add_view(ModelView(Role, db.session))
 admin.add_view(ModelView(User, db.session))
 admin.add_view(ModelView(Room, db.session))
 admin.add_view(ModelView(Msg, db.session))
 
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+user_datastore = SQLAlchemyUserDatastore(db, User, Room)
 security = Security()
