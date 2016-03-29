@@ -166,6 +166,14 @@
 
             socket.on('connect', function(){
                 $('div#system').append('connected!<br>');
+                // entering global chatroom
+                socket.emit(
+                        'join_req',
+                        {
+                            room: "Global"
+                        }
+                );
+                // request lookback message
                 {% if message_id %}
                     socket.emit(
                             'lookback_messages',
