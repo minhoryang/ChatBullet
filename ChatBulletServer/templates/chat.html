@@ -19,7 +19,7 @@
             </li>
         </ul>
         <form id="join" class="form-inline pull-xs-right">
-            <input class="form-control" type="text" id="room" placeholder="RoomName">
+            <input class="form-control" type="text" id="room" placeholder="RoomName" style="display: inline-block; width: auto">
             <button class="btn btn-success" type="submit">Join</button>
         </form>
     </header>
@@ -29,15 +29,17 @@
     <footer class="footer">
         <div class="container">
             <div class="row">
-                <div class="col-md-11">
+                <div class="col-xs-9 col-sm-10 col-md-11 col-lg-10 col-xl-11">
                     <form id="send" class="form-inline">
-                        <div class="col-md-11">
+                        <div class="col-xs-9 col-sm-10 col-md-10 col-lg-10 col-xl-11">
                             <input class="form-control" type="text" id="msg" placeholder="message" style="width:100%" />
                         </div>
-                        <input class="btn btn-primary" type="submit" value="Send" />
+                        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-1 col-xl-1">
+                            <input class="btn btn-primary" type="submit" value="Send" />
+                        </div>
                     </form>
                 </div>
-                <div class="col-md-1">
+                <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1 col-xl-1">
                     <form id="leave">
                         <input class="btn btn-danger-outline" type="submit" value="Leave" />
                     </form>
