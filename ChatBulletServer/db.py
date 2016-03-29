@@ -66,6 +66,7 @@ class Room(db.Model, RoleMixin):
             cascade='all, delete',
     )
     # XXX: Issue #11: ACL
+    is_restricted = db.Column(db.Boolean(), default=False)
 
     def __str__(self):
         return "#{0}".format(self.name)
