@@ -56,7 +56,9 @@
     </script>
     <script type="text/html" id="talked_tmpl">
         <div>
-            <message />
+            <a class="message">
+                <message />
+            </a>
             <button type="button" class="btn btn-warning btn-sm mod">Mod</button>
             <button type="button" class="btn btn-danger btn-sm del">Del</button>
             <br>
@@ -73,7 +75,8 @@
         function talked_tmpl(message){
             tmpl = $($("#talked_tmpl").html());
             $("message", tmpl).replaceWith(message.data);
-            $("button", tmpl).attr('data_id', message.id);
+            $("a", tmpl).attr('href', message.id);
+            $(tmpl).attr('id', message.id);
             $("button.mod", tmpl).on('click', function(){
                 socket.emit(
                         'modify_msg_req',
@@ -120,6 +123,14 @@
             socket.on('talked', function(message){
                 talked_tmpl(message);
                 console.log(message);
+            });
+
+            socket.on('modified_msg', function(message){
+                $('div#' + message.id + ' .message').text(message.data);
+            });
+
+            socket.on('deleted_msg', function(message){
+                $('div#' + message.id).remove();
             });
 
             $('#send').submit(function (){

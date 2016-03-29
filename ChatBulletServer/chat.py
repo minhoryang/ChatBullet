@@ -171,19 +171,46 @@ def on_lookback_messages(message):
                 'talked',
                 {
                     'id': str(m.id),
+                    'room': from_msg.room.name,
                     'data': m.contents,
                 },
-                room=from_msg.room.name,
         )
 
 
 @socketio.on('modify_msg_req', namespace=namespace)
 def on_modify_msg_request(message):
-    pass  # TODO: Issue #4
+    """Issue #4, When User modify the message."""
+
+    id = message.get('id')
+    if not id:
+        return
+
+    old_msg = Msg.query.get(id)
+    if not old_msg:
+        return
+
+    old_msg.contents = message['data']
+    db.session.commit()
+
+    emit('modified_msg', message, room=old_msg.room.name)
 
 
 @socketio.on('delete_msg_req', namespace=namespace)
 def on_delete_msg_request(message):
-    pass  # TODO: Issue #4
+    """Issue #4, When User delete the message."""
+
+    id = message.get('id')
+    if not id:
+        return
+
+    old_msg = Msg.query.get(id)
+    if not old_msg:
+        return
+
+    room_name = old_msg.room.name
+    db.session.delete(old_msg)
+    db.session.commit()
+
+    emit('deleted_msg', message, room=room_name)
 
 # TODO: Issue #12: Direct Message.
