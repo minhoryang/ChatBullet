@@ -48,21 +48,54 @@
     <script type="text/javascript" src="//cdn.socket.io/socket.io-1.4.5.js"></script>
 
     <!-- templates -->
-    <script type="text/html" id="talked_tmpl">
+    <script type="text/html" id="system_tmpl">
         <div>
             <message />
             <br>
         </div>
     </script>
+    <script type="text/html" id="talked_tmpl">
+        <div>
+            <message />
+            <button type="button" class="btn btn-warning btn-sm mod">Mod</button>
+            <button type="button" class="btn btn-danger btn-sm del">Del</button>
+            <br>
+        </div>
+    </script>
 
     <script type="text/javascript" charset="utf-8">
-        function talked_tmpl(message){
-            tmpl = $($("#talked_tmpl").html());
+        function system_tmpl(message){
+            tmpl = $($("#system_tmpl").html());
             $("message", tmpl).replaceWith(message);
             return tmpl
         }
+
+        function talked_tmpl(message){
+            tmpl = $($("#talked_tmpl").html());
+            $("message", tmpl).replaceWith(message.data);
+            $("button", tmpl).attr('data_id', message.id);
+            $("button.mod", tmpl).on('click', function(){
+                socket.emit(
+                        'modify_msg_req',
+                        {
+                            id: message.id,
+                            data: prompt(message.data, message.data)
+                        }
+                )
+            });
+            $("button.del", tmpl).on('click', function(){
+                socket.emit(
+                        'delete_msg_req',
+                        {
+                            id: message.id
+                        }
+                )
+            });
+            $('#log').append(tmpl);
+        }
+        var socket;
         $(document).ready(function(){
-            var socket = io.connect('/ws');
+            socket = io.connect('/ws');
 
             socket.on('connect', function(){
                 $('#log').append('connected!<br>');
@@ -81,11 +114,11 @@
             });
 
             socket.on('system', function(message){
-                $('#log').append(talked_tmpl(message.message));
+                $('#log').append(system_tmpl(message.message));
             });
 
             socket.on('talked', function(message){
-                $('#log').append(talked_tmpl(message.data));
+                talked_tmpl(message);
                 console.log(message);
             });
 
