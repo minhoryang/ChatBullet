@@ -2,20 +2,15 @@
 
 from datetime import timedelta
 
-from flask import (
-    session,
-)
-
 from flask_socketio import (
     SocketIO,
     emit,
-    disconnect,
     join_room,
     leave_room,
 )
+from flask.ext.security import current_user
 
 from .db import (
-    User,
     Room,
     Msg,
     db,
@@ -26,15 +21,6 @@ namespace = '/ws'
 
 # TODO: Need to make a template for SocketIO message.
 #       Is there any WTF-thingy similar?
-
-
-def _get_current_user():
-    # TODO: Issue #9: Accounts
-    # TODO: pull this out to db.user?
-    user_id = session.get('user')
-    if not user_id:
-        return
-    return User.query.get(user_id)
 
 
 def _get_current_room(message):
@@ -51,35 +37,24 @@ def _get_current_room(message):
 def on_connected():
     """When User Connected, Join the previous rooms without touching db."""
 
-    user = _get_current_user()
-    if not user:
-        disconnect()
-        return  # TODO: Notify error to user.
-
-    for room in user.rooms:
-        _join_room_and_notify(user, room)
+    for room in current_user.rooms:
+        _join_room_and_notify(current_user, room)
 
 
 @socketio.on('disconnect', namespace=namespace)
 def on_disconnected():
     """When User Disconnected, Leave the current rooms without touching db."""
 
-    user = _get_current_user()
-    if not user:
-        return  # TODO: Notify error to user.
-
-    for room in user.rooms:
-        _leave_room_and_notify(user, room)
+    for room in current_user.rooms:
+        _leave_room_and_notify(current_user, room)
 
 
 @socketio.on('send_message', namespace=namespace)
 def on_send_message(message):
     """When User asked to send a message, Relay it to room."""
     current_room = _get_current_room(message)
-    current_user = _get_current_user()
     if (
         not current_room or
-        not current_user or
         current_user not in current_room.users
     ):
         return  # TODO: Notify error to user.
@@ -115,23 +90,22 @@ def on_join_request(message):
         db.session.add(room)
 
     # Affect to DB
-    user = _get_current_user()
-    if room in user.rooms:
+    if room in current_user.rooms:
         return  # TODO: Notify error to user.
-    user.rooms.append(room)
+    current_user.rooms.append(room)
     db.session.commit()
 
-    _join_room_and_notify(user, room)
+    _join_room_and_notify(current_user, room)
 
 
 def _join_room_and_notify(user, room):
     """Join room and notify the user in that room."""
     emit('system', {
-        'message': 'Join #{0}'.format(room.name),
+        'message': 'Join {0}'.format(room),
     })
     join_room(room.name)
     emit('system', {
-        'message': '@{0} Join'.format(user.name)
+        'message': '{0} Join'.format(user)
     }, room=room.name)
     # TODO: Send room name, Connected User List
 
@@ -153,25 +127,24 @@ def on_leave_request(message):
         return  # TODO: Notify error to user.
 
     # Affect to DB
-    user = _get_current_user()
-    user.rooms.remove(room)
+    current_user.rooms.remove(room)
 
     # If no one in that room, delete it.
     if not room.users.first():
         db.session.delete(room)
     db.session.commit()
 
-    _leave_room_and_notify(user, room)
+    _leave_room_and_notify(current_user, room)
 
 
 def _leave_room_and_notify(user, room):
     """Leave room and notify the users in that room."""
     emit('system', {
-        'message': 'Leave #{0}'.format(room.name),
+        'message': 'Leave {0}'.format(room),
     })
     leave_room(room.name)
     emit('system', {
-        'message': '@{0} Leaves'.format(user.name)
+        'message': '{0} Leaves'.format(user)
     }, room=room.name)
 
 

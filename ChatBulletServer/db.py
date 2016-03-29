@@ -5,6 +5,12 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask.ext.security import (
+    Security,
+    SQLAlchemyUserDatastore,
+    UserMixin,
+    RoleMixin,
+)
 
 from ._types import (
     UUIDType,
@@ -16,6 +22,23 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 
+# XXX: Issue #9: flask-social flask-security
+roles_users = db.Table(
+    'roles_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+)
+
+
+class Role(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+    def __str__(self):
+        return "<{0}>".format(self.name)
+
+
 users_in_room = db.Table(
         'users_in_room',
         db.Column('user_id', UUIDType(), db.ForeignKey('user.id')),
@@ -23,12 +46,20 @@ users_in_room = db.Table(
 )
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = "user"
 
     id = db.Column(UUIDType(), primary_key=True, default=uuid4)
-    name = db.Column(db.String(50), unique=True)
-    # TODO: Issue #9: flask-social flask-security
+    # XXX: Issue #9: flask-social flask-security
+    email = db.Column(db.String(255), unique=True)
+    password = db.Column(db.String(255))
+    active = db.Column(db.Boolean())
+    roles = db.relationship(
+        'Role',
+        secondary=roles_users,
+        backref=db.backref('users', lazy='dynamic')
+    )
+
     rooms = db.relationship(
             'Room',
             secondary=users_in_room,
@@ -37,7 +68,7 @@ class User(db.Model):
     )
 
     def __str__(self):
-        return self.name
+        return "@{0}".format(self.email)
 
 
 class Room(db.Model):
@@ -54,7 +85,7 @@ class Room(db.Model):
     # TODO: Issue #11: ACL
 
     def __str__(self):
-        return self.name
+        return "#{0}".format(self.name)
 
 
 class Msg(db.Model):
@@ -69,10 +100,14 @@ class Msg(db.Model):
     # TODO: Issue #4: Modifiable, Deletable
 
     def __str__(self):
-        return self.contents
+        return "'{0}'".format(self.contents)
 
 
 # TODO: flask-admin: primary_key didn't show.
+admin.add_view(ModelView(Role, db.session))
 admin.add_view(ModelView(User, db.session))
 admin.add_view(ModelView(Room, db.session))
 admin.add_view(ModelView(Msg, db.session))
+
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security()
